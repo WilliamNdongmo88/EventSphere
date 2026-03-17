@@ -1,0 +1,25 @@
+<apex:page controller="AttendeeBadgeController"
+    renderAs="pdf"
+    applyBodyTag="false"
+    showHeader="false">
+
+    <!-- Inclusion de la ressource statique CSS -->
+    <apex:stylesheet value="{!$Resource.BadgeCSS}" />
+
+    <div class="badge">
+
+        <div class="event-name">
+            {!attendee.Event__r.Name}
+        </div>
+
+        <div class="attendee-name">
+            Participant : {!attendee.Contact__r.Name}
+        </div>
+
+        <div class="qr-code">
+            <img src="{!qrCodeUrl}" width="120" height="120"/>
+        </div>
+
+    </div>
+
+</apex:page>

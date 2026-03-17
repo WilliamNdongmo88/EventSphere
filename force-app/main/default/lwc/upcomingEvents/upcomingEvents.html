@@ -1,0 +1,121 @@
+<template>
+    <lightning-card title="Upcoming Events" icon-name="utility:event">
+
+        <!-- Spinner -->
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        </template>
+
+        <!-- Events -->
+        <template if:true={events}>
+            <ul class="slds-list_vertical slds-has-dividers_bottom">
+                <template for:each={events} for:item="event">
+                    <li key={event.Id} class="slds-item">
+                        <div class="slds-media slds-media_center slds-p-around_small">
+                            <!-- Flèche gauche -->
+                            <div class="slds-media__figure">
+                                <lightning-icon
+                                    icon-name={event.icon}
+                                    size="small"
+                                    data-id={event.Id}
+                                    onclick={toggleEvent}>
+                                </lightning-icon>
+                            </div>
+                            <!-- Contenu -->
+                            <div class="slds-media__body">
+                                <!-- <p class="slds-text-title">
+                                    Upcoming Event
+                                </p> -->
+                                <a
+                                    data-id={event.Id}
+                                    onclick={handleNavigate}
+                                    class="event-link"
+                                >
+                                    {event.Name}
+                                </a>
+                                <p class="slds-text-body_small">
+                                    <lightning-formatted-date-time
+                                        value={event.Start_DateTime__c}
+                                        year="numeric"
+                                        month="short"
+                                        day="2-digit"
+                                        hour="2-digit"
+                                        minute="2-digit">
+                                    </lightning-formatted-date-time>
+
+                                    -
+
+                                    <lightning-formatted-date-time
+                                        value={event.End_DateTime__c}
+                                        year="numeric"
+                                        month="short"
+                                        day="2-digit"
+                                        hour="2-digit"
+                                        minute="2-digit">
+                                    </lightning-formatted-date-time>
+                                </p>
+                            </div>
+                            <!-- Actions droite -->
+                            <div class="slds-media__figure slds-media__figure_reverse">
+                                <lightning-button-icon
+                                    icon-name="utility:preview"
+                                    alternative-text="View"
+                                    data-id={event.Id}
+                                    onclick={handleNavigate}
+                                    class="slds-m-right_x-small">
+                                </lightning-button-icon>
+
+                                <lightning-button-icon
+                                    icon-name="utility:close"
+                                    alternative-text="Dismiss">
+                                </lightning-button-icon>
+                            </div>
+                        </div>
+
+                        <!-- Contenu custom-accordion -->
+                        <template if:true={event.isOpen}>
+                            <div class="slds-p-left_medium c-mt slds-var-m-around_xx-large">
+
+                                <p class="slds-text-title_bold slds-m-bottom_x-small">
+                                    Participants
+                                </p>
+
+                                <template if:true={event.attendees.length}>
+                                    <ul class="slds-list_dotted">
+
+                                        <template for:each={event.attendees} for:item="att">
+                                            <li key={att.Id} class="slds-p-vertical_x-small">
+
+                                                <lightning-icon
+                                                    icon-name="standard:contact"
+                                                    size="x-small"
+                                                    class="slds-m-right_x-small">
+                                                </lightning-icon>
+
+                                                {att.Contact__r.Name}
+
+                                                <span class="slds-text-color_weak">
+                                                    ({att.Registration_Status__c})
+                                                </span>
+
+                                            </li>
+                                        </template>
+
+                                    </ul>
+                                </template>
+
+                                <template if:false={event.attendees.length}>
+                                    <p class="slds-text-color_weak">
+                                        No participants registered.
+                                    </p>
+                                </template>
+
+                            </div>
+                        </template>
+                    </li>
+                </template>
+            </ul>
+        </template>
+
+    </lightning-card>
+</template>
