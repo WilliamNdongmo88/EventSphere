@@ -1,20 +1,70 @@
 public with sharing class QRCodeService {
 
-    // Génère URL personnalisée vers ta page Salesforce
-    public static String generateEventUrl(Id eventId){
-        return URL.getOrgDomainUrl().toExternalForm() 
-            + '/lightning/cmp/c__eventDetails?c__eventId=' + eventId;
+    public class QRRequest {
+        public String attendeeId;
+        public String logoFileName;
     }
 
-    // Génère QR Code (base64 image)
-    public static String generateQRCode(Id eventId){
+    public class QRResponse {
+        public String qrUrl;
+    }
 
-        String url = generateEventUrl(eventId);
-        String encodedUrl = EncodingUtil.urlEncode(url, 'UTF-8');
+    @future(callout=true)
+    public static void generateAttendeeQrAsync(Id attendeeId, String logoFileName){
 
-        String qrUrl = 'https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=' 
-                        + encodedUrl;
+        try {
+            QRResponse response = generateAttendeeQr(attendeeId, logoFileName);
+            System.debug('### QRResponse: ' + response);
+            // 👉 Exemple : sauvegarder sur un champ
+            if(response != null && String.isNotBlank(response.qrUrl)){
+                
+                // ⚠️ adapte l’objet selon ton modèle
+                Attendee__c attendee = new Attendee__c(
+                    Id = attendeeId,
+                    QR_Code_URL__c = response.qrUrl
+                );
 
-        return qrUrl;
+                update attendee;
+                System.debug('### attendee :1: ' + attendee);
+            }
+
+        } catch (Exception e) {
+            System.debug('Erreur Async QR: ' + e.getMessage());
+        }
+    }
+
+    public static QRResponse generateAttendeeQr(Id attendeeId, String logoFileName){
+
+        System.debug(' -----:Callout:----- ');
+
+        Http http = new Http();
+        HttpRequest req = new HttpRequest();
+
+        req.setEndpoint('https://api.smart-invite.com/api/invitation/attendee-qr');
+        req.setMethod('POST');
+        req.setHeader('Content-Type', 'application/json');
+
+        QRRequest body = new QRRequest();
+        body.attendeeId = String.valueOf(attendeeId);
+        body.logoFileName = logoFileName;
+
+        req.setBody(JSON.serialize(body));
+
+        HttpResponse res = http.send(req);
+
+        if(res.getStatusCode() == 200 || res.getStatusCode() == 201){
+
+            QRResponse response = (QRResponse) JSON.deserialize(
+                res.getBody(),
+                QRResponse.class
+            );
+
+            return response;
+
+        } else {
+            throw new CalloutException(
+                'Erreur API QR: ' + res.getStatusCode() + ' - ' + res.getBody()
+            );
+        }
     }
 }

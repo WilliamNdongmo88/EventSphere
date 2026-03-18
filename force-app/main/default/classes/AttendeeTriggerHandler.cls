@@ -30,4 +30,17 @@ public with sharing class AttendeeTriggerHandler {
             }
         }
     }
+
+    public static void handlerAfterInsert(List<Attendee__c> attendees) {
+        // éviter récursivité
+        if(AttendeeTriggerHandler.disableAttendeeTrigger){
+            return;
+        }
+
+        for(Attendee__c attendee : attendees){
+            if(attendee.Id != null){
+                QRCodeService.generateAttendeeQrAsync(attendee.Id, 'logo-salesforce.webp'); 
+            }
+        }
+    }
 }

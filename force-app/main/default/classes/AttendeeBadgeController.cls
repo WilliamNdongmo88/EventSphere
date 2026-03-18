@@ -9,7 +9,7 @@ public with sharing class AttendeeBadgeController {
             if(String.isNotBlank(attendeeId)){
                 attendee = [
                     SELECT Id, 
-                           Contact__r.Name, 
+                           Contact__r.Name, QR_Code_URL__c,
                            Event__r.Name, Event__r.Start_DateTime__c, Event__r.End_DateTime__c
                     FROM Attendee__c
                     WHERE Id = :attendeeId
